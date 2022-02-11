@@ -1,12 +1,11 @@
 package swati4star.createpdf.adapter;
 
+import static swati4star.createpdf.util.Constants.SORTING_INDEX;
+import static swati4star.createpdf.util.FileInfoUtils.getFormattedDate;
+
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import androidx.annotation.NonNull;
-import com.google.android.material.snackbar.Snackbar;
-import androidx.appcompat.app.AlertDialog;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,8 +13,13 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.balysv.materialripple.MaterialRippleLayout;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -41,9 +45,6 @@ import swati4star.createpdf.util.PDFUtils;
 import swati4star.createpdf.util.PopulateList;
 import swati4star.createpdf.util.StringUtils;
 import swati4star.createpdf.util.WatermarkUtils;
-
-import static swati4star.createpdf.util.Constants.SORTING_INDEX;
-import static swati4star.createpdf.util.FileInfoUtils.getFormattedDate;
 
 /**
  * Created by swati on 9/10/15.
@@ -278,9 +279,9 @@ public class ViewFilesAdapter extends RecyclerView.Adapter<ViewFilesAdapter.View
      * iterate through filelist and deletes
      * all files on positive response
      */
-    private void deleteFiles(ArrayList<Integer> files ) {
+    private void deleteFiles(ArrayList<Integer> files) {
 
-        int messageAlert , messageSnackbar;
+        int messageAlert, messageSnackbar;
         if (files.size() > 1) {
             messageAlert = R.string.delete_alert_selected;
             messageSnackbar = R.string.snackbar_files_deleted;
@@ -294,48 +295,60 @@ public class ViewFilesAdapter extends RecyclerView.Adapter<ViewFilesAdapter.View
                 .setNegativeButton(R.string.cancel, (dialogInterface, i) -> dialogInterface.dismiss())
                 .setTitle(messageAlert)
                 .setPositiveButton(R.string.yes, (dialog, which) -> {
-                    ArrayList<String> filePath = new ArrayList<>();
-
-                    for (int position : files) {
-                        if (position >= mFileList.size())
-                            continue;
-                        filePath.add(mFileList.get(position).getPdfFile().getPath());
-                        mFileList.remove(position);
-                    }
-
-                    mSelectedFiles.clear();
-                    files.clear();
-                    updateActionBarTitle();
-                    notifyDataSetChanged();
-
-                    if (mFileList.size() == 0)
-                        mEmptyStateChangeListener.setEmptyStateVisible();
-
-                    AtomicInteger undoClicked = new AtomicInteger();
-                    StringUtils.getInstance().getSnackbarwithAction(mActivity, messageSnackbar)
-                            .setAction(R.string.snackbar_undoAction, v -> {
-                                if (mFileList.size() == 0) {
-                                    mEmptyStateChangeListener.setEmptyStateInvisible();
-                                }
-                                updateDataset();
-                                undoClicked.set(1);
-                            }).addCallback(new Snackbar.Callback() {
-                                    @Override
-                                    public void onDismissed(Snackbar snackbar, int event) {
-                                        if (undoClicked.get() == 0) {
-                                            for (String path : filePath) {
-                                                File fdelete = new File(path);
-                                                mDatabaseHelper.insertRecord(fdelete.getAbsolutePath(),
-                                                        mActivity.getString(R.string.deleted));
-                                                if (fdelete.exists() && !fdelete.delete())
-                                                    StringUtils.getInstance().showSnackbar(mActivity,
-                                                            R.string.snackbar_file_not_deleted);
-                                            }
-                                        }
-                                    }
-                            }).show();
+                    setPositiveActionIntoDialogAlert(files, messageSnackbar);
                 });
         dialogAlert.create().show();
+    }
+
+    private void setPositiveActionIntoDialogAlert(ArrayList<Integer> files, int messageSnackbar) {
+        ArrayList<String> filePath = new ArrayList<>();
+
+        for (int position : files) {
+            if (position >= mFileList.size())
+                continue;
+            filePath.add(mFileList.get(position).getPdfFile().getPath());
+            mFileList.remove(position);
+        }
+
+        mSelectedFiles.clear();
+        files.clear();
+        updateActionBarTitle();
+        notifyDataSetChanged();
+
+        if (mFileList.size() == 0)
+            mEmptyStateChangeListener.setEmptyStateVisible();
+
+        showSnackbarWithAction(messageSnackbar, filePath);
+    }
+
+    private void showSnackbarWithAction(int messageSnackbar, ArrayList<String> filePath) {
+        AtomicInteger undoClicked = new AtomicInteger();
+        StringUtils.getInstance().getSnackbarwithAction(mActivity, messageSnackbar)
+                .setAction(R.string.snackbar_undoAction, v -> {
+                    if (mFileList.isEmpty()) {
+                        mEmptyStateChangeListener.setEmptyStateInvisible();
+                    }
+                    updateDataset();
+                    undoClicked.set(1);
+                }).addCallback(new Snackbar.Callback() {
+                    @Override
+                    public void onDismissed(Snackbar snackbar, int event) {
+                        snackBarCallbackOnDismissed(undoClicked, filePath);
+                    }
+                }).show();
+    }
+
+    private void snackBarCallbackOnDismissed(AtomicInteger undoClicked, ArrayList<String> filePath) {
+        if (undoClicked.get() == 0) {
+            for (String path : filePath) {
+                File fdelete = new File(path);
+                mDatabaseHelper.insertRecord(fdelete.getAbsolutePath(),
+                        mActivity.getString(R.string.deleted));
+                if (fdelete.exists() && !fdelete.delete())
+                    StringUtils.getInstance().showSnackbar(mActivity,
+                            R.string.snackbar_file_not_deleted);
+            }
+        }
     }
 
     /**
