@@ -128,32 +128,44 @@ public class QrBarcodeScanFragment extends Fragment implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.scan_qrcode:
-                if (Build.VERSION.SDK_INT >= 23) {
-                    if (isCameraPermissionGranted()) {
-                        if (PermissionsUtils.getInstance().checkRuntimePermissions(this, WRITE_PERMISSIONS)) {
-                            openScanner(IntentIntegrator.QR_CODE_TYPES, R.string.scan_qrcode);
-                        } else {
-                            getRuntimePermissions();
-                        }
-                    } else {
-                        requestCameraPermissionForQrCodeScan();
-                    }
-                }
+                openQrCodeScanner();
                 break;
             case R.id.scan_barcode:
-                if (Build.VERSION.SDK_INT >= 23) {
-                    if (isCameraPermissionGranted()) {
-                        if (PermissionsUtils.getInstance().checkRuntimePermissions(this, WRITE_PERMISSIONS)) {
-                            openScanner(IntentIntegrator.ONE_D_CODE_TYPES, R.string.scan_barcode);
-                        } else {
-                            getRuntimePermissions();
-                        }
-                    } else {
-                        requestCameraPermissionForBarCodeScan();
-                    }
-                }
+                openBarcodeScanner();
                 break;
         }
+    }
+
+    private void openBarcodeScanner() {
+        if (isBuildVersionSDKGreaterThan23()) {
+            if (isCameraPermissionGranted()) {
+                if (PermissionsUtils.getInstance().checkRuntimePermissions(this, WRITE_PERMISSIONS)) {
+                    openScanner(IntentIntegrator.ONE_D_CODE_TYPES, R.string.scan_barcode);
+                } else {
+                    getRuntimePermissions();
+                }
+            } else {
+                requestCameraPermissionForBarCodeScan();
+            }
+        }
+    }
+
+    private void openQrCodeScanner() {
+        if (isBuildVersionSDKGreaterThan23()) {
+            if (isCameraPermissionGranted()) {
+                if (PermissionsUtils.getInstance().checkRuntimePermissions(this, WRITE_PERMISSIONS)) {
+                    openScanner(IntentIntegrator.QR_CODE_TYPES, R.string.scan_qrcode);
+                } else {
+                    getRuntimePermissions();
+                }
+            } else {
+                requestCameraPermissionForQrCodeScan();
+            }
+        }
+    }
+
+    private boolean isBuildVersionSDKGreaterThan23() {
+        return Build.VERSION.SDK_INT >= 23;
     }
 
     /**
