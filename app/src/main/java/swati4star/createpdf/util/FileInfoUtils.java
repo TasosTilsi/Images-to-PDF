@@ -3,9 +3,23 @@ package swati4star.createpdf.util;
 import java.io.File;
 import java.util.Date;
 
-public class FileInfoUtils {
+public final class FileInfoUtils {
+
+    private static FileInfoUtils fileInfoUtils = new FileInfoUtils();
+
+    /* A private Constructor prevents any other
+     * class from instantiating.
+     */
+    private FileInfoUtils() {
+    }
+
+    /* Static 'instance' method */
+    public static FileInfoUtils getInstance() {
+        return fileInfoUtils;
+    }
 
     // GET PDF DETAILS
+
     /**
      * Gives a formatted last modified date for pdf ListView
      *

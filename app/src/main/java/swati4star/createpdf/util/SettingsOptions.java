@@ -1,5 +1,7 @@
 package swati4star.createpdf.util;
 
+import static swati4star.createpdf.util.Constants.DEFAULT_COMPRESSION;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -11,9 +13,20 @@ import java.util.ArrayList;
 import swati4star.createpdf.R;
 import swati4star.createpdf.model.EnhancementOptionsEntity;
 
-import static swati4star.createpdf.util.Constants.DEFAULT_COMPRESSION;
+public final class SettingsOptions {
 
-public class SettingsOptions {
+    private static SettingsOptions settingsOptions = new SettingsOptions();
+
+    /* A private Constructor prevents any other
+     * class from instantiating.
+     */
+    private SettingsOptions() {
+    }
+
+    /* Static 'instance' method */
+    public static SettingsOptions getInstance() {
+        return settingsOptions;
+    }
 
     public static ArrayList<EnhancementOptionsEntity> getEnhancementOptions(Context context) {
         ArrayList<EnhancementOptionsEntity> options = new ArrayList<>();

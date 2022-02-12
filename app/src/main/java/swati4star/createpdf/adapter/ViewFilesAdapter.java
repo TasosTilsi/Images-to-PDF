@@ -208,7 +208,7 @@ public class ViewFilesAdapter extends RecyclerView.Adapter<ViewFilesAdapter.View
      *
      * @return paths of files
      */
-    public ArrayList<String> getSelectedFilePath() {
+    public List<String> getSelectedFilePath() {
         ArrayList<String> filePathList = new ArrayList<>();
         for (int position : mSelectedFiles) {
             if (mFileList.size() > position)
@@ -252,7 +252,7 @@ public class ViewFilesAdapter extends RecyclerView.Adapter<ViewFilesAdapter.View
      * @return tru, if at least one item is checked
      */
     public boolean areItemsSelected() {
-        return mSelectedFiles.size() > 0;
+        return !mSelectedFiles.isEmpty();
     }
 
     /**
@@ -315,7 +315,7 @@ public class ViewFilesAdapter extends RecyclerView.Adapter<ViewFilesAdapter.View
         updateActionBarTitle();
         notifyDataSetChanged();
 
-        if (mFileList.size() == 0)
+        if (mFileList.isEmpty())
             mEmptyStateChangeListener.setEmptyStateVisible();
 
         showSnackbarWithAction(messageSnackbar, filePath);
